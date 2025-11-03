@@ -25,8 +25,7 @@ class GenreTranslationOptions(TranslationOptions):
 
 @register(Movie)
 class MovieTranslationOptions(TranslationOptions):
-    fields = ('movie_name', 'country', 'director', 'actor', 'genre',
-              'description')
+    fields = ('movie_name', 'description')
 
 
 @register(MovieLanguages)

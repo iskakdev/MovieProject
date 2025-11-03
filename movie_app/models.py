@@ -70,7 +70,7 @@ class Movie(models.Model):
         ('720p', '720p'),
         ('1080p', '1080p'),
     )
-    types = models.CharField(choices=TYPE_CHOICES)
+    types = models.CharField(choices=TYPE_CHOICES, default='360p')
     movie_time = models.PositiveSmallIntegerField()
     description = models.TextField()
     movie_trailer = models.URLField()
