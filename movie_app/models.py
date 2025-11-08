@@ -59,10 +59,10 @@ class Genre(models.Model):
 class Movie(models.Model):
     movie_name = models.CharField(max_length=64)
     year = models.DateField()
-    country = models.ManyToManyField(Country)
-    director = models.ManyToManyField(Director)
-    actor = models.ManyToManyField(Actor)
-    genre = models.ManyToManyField(Genre)
+    country = models.ManyToManyField(Country, related_name='country_movie')
+    director = models.ManyToManyField(Director, related_name='director_movie')
+    actor = models.ManyToManyField(Actor, related_name='actor_movie')
+    genre = models.ManyToManyField(Genre, related_name='genre_movie')
     TYPE_CHOICES = (
         ('144p', '144p'),
         ('360p', '360p'),
@@ -80,18 +80,27 @@ class Movie(models.Model):
     def __str__(self):
         return self.movie_name
 
+    def get_avg_rating(self):
+        ratings = self.ratings.all()
+        if ratings.exists():
+            return round(sum([i.stars for i in ratings]) / ratings.count(), 2)
+        return 0
+
+    def get_count_people(self):
+        return self.ratings.count()
+
 
 class MovieLanguages(models.Model):
     language = models.CharField(max_length=32)
     video = models.FileField(upload_to='movie_videos/')
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='movie_language')
 
     def __str__(self):
         return f'{self.movie}, {self.language}'
 
 
 class Moments(models.Model):
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='movie_frames')
     movie_moments = models.ImageField(upload_to='movie_moments/')
 
     def __str__(self):
@@ -100,7 +109,7 @@ class Moments(models.Model):
 class Rating(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='ratings')
     stars = models.PositiveIntegerField(choices=[(i, str(i)) for i in range(1,11)])
     text = models.TextField()
     created_date = models.DateTimeField(auto_now_add=True)

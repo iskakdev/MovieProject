@@ -46,52 +46,128 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ProfileRatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['first_name']
+
+
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields = '__all__'
+        fields = ['country_name']
 
 
 class DirectorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Director
-        fields = '__all__'
+        fields = ['director_name']
 
 
 class ActorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Actor
-        fields = '__all__'
+        fields = ['actor_name']
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = '__all__'
+        fields = ['genre_name']
 
 
-class MovieSerializer(serializers.ModelSerializer):
+class MovieListSerializer(serializers.ModelSerializer):
+    year = serializers.DateField(format='%Y')
+    country = CountrySerializer(many=True)
+    genre = GenreSerializer(many=True)
+
     class Meta:
         model = Movie
-        fields = '__all__'
+        fields = ['id', 'movie_image', 'movie_name', 'year',
+                  'country', 'genre', 'status_movie']
 
 
-class MovieLanguagesSerializer(serializers.ModelSerializer):
+class CountryDetailSerializer(serializers.ModelSerializer):
+    country_movie = MovieListSerializer(many=True, read_only=True)
+
     class Meta:
-        model = MovieLanguages
-        fields = '__all__'
+        model = Country
+        fields = ['country_name', 'country_movie']
+
+
+class DirectorDetailSerializer(serializers.ModelSerializer):
+    director_movie = MovieListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Director
+        fields = ['director_name', 'bio', 'age',
+                  'director_image', 'director_movie']
+
+
+class ActorDetailSerializer(serializers.ModelSerializer):
+    actor_movie = MovieListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Actor
+        fields = ['actor_name', 'bio', 'age',
+                  'actor_image', 'actor_movie']
+
+
+class GenreDetailSerializer(serializers.ModelSerializer):
+    genre_movie = MovieListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Genre
+        fields = ['genre_name', 'genre_movie']
 
 
 class MomentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Moments
-        fields = '__all__'
+        fields = ['movie_moments']
+
+
+class MovieLanguagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MovieLanguages
+        fields = ['language', 'video']
 
 
 class RatingSerializer(serializers.ModelSerializer):
+    user = ProfileRatingSerializer()
+    created_date = serializers.DateTimeField(format='%d-%m-%Y %H:%M')
+
     class Meta:
         model = Rating
-        fields = '__all__'
+        fields = ['id', 'user', 'parent', 'stars', 'text', 'created_date']
+
+
+class MovieDetailSerializer(serializers.ModelSerializer):
+    year = serializers.DateField(format='%d-%m_Y')
+    country = CountrySerializer(many=True)
+    genre = GenreSerializer(many=True)
+    director = DirectorSerializer(many=True)
+    actor = ActorSerializer(many=True)
+    movie_frames = MomentsSerializer(many=True, read_only=True)
+    movie_language = MovieLanguagesSerializer(many=True, read_only=True)
+    ratings = RatingSerializer(many=True, read_only=True)
+    get_avg_rating = serializers.SerializerMethodField()
+    get_count_people = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Movie
+        fields = ['id', 'movie_name', 'year', 'country',
+                  'director', 'actor', 'genre', 'types',
+                  'movie_time', 'description', 'movie_trailer',
+                  'movie_image', 'status_movie', 'movie_frames',
+                  'movie_language', 'ratings', 'get_avg_rating',
+                  'get_count_people']
+
+    def get_avg_rating(self, obj):
+        return obj.get_avg_rating
+
+    def get_count_people(self, obj):
+        return obj.get_count_people
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
